@@ -24,6 +24,8 @@ add_executable(ParserTest
 target_link_libraries(ParserTest Parser)
 
 add_executable(ParserBenchmark
+    tests/tinyexpr/tinyexpr.c
+    tests/tinyexpr/tinyexpr.h
     tests/common.cpp
     tests/common.h
     tests/benchmark.cpp

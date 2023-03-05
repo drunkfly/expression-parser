@@ -25,6 +25,7 @@ SOFTWARE.
 #include "parser/resolve_oop.h"
 
 #define PC_VALUE 0xcafebabe
+#define VALUE_32 0x0abacada
 
 class MyResolver : public ExprResolver
 {

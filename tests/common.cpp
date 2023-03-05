@@ -22,7 +22,7 @@ SOFTWARE.
 #include "tests/common.h"
 #include <string.h>
 
-static const uint32_t value32 = 0x0abacada;
+static const uint32_t value32 = VALUE_32;
 
 static ExprValue fn0()
 {
@@ -112,7 +112,7 @@ bool MyResolver::resolveVariable(const char* name, ExprValuePtr& result)
         result.sizeInBytes = 3;
         return true;
     }
-    if (!strcmp(name, "var.32")) {
+    if (!strcmp(name, "var.32") || !strcmp(name, "var_32")) {
         result.ptr = &value32;
         result.sizeInBytes = 4;
         return true;

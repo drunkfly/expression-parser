@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 #include "tests/common.h"
+#include "tests/tinyexpr/tinyexpr.h"
 #include "parser/parser_oop.h"
 #include "parser/parser_lessoop.h"
 #include <stdio.h>
@@ -64,6 +65,9 @@ static ParserLessOop::Expr* lessOopCompile(const char* input)
     }
 }
 
+static double var_32 = VALUE_32;
+static te_variable vars[] = { {"var_32", &var_32} };
+
 static void benchmark(const char* input)
 {
     const size_t ITER_COUNT = 10000000;
@@ -73,6 +77,8 @@ static void benchmark(const char* input)
 
     ParserOop::Expr* oopExpr = oopCompile(input);
     ParserLessOop::Expr* lessOopExpr = lessOopCompile(input);
+    int err;
+    te_expr* tinyExpr = te_compile(input, vars, 1, &err);
 
     // ParserOop
 
@@ -98,13 +104,26 @@ static void benchmark(const char* input)
         ParserLessOop::exprEvaluate(lessOopExpr, e);
     double lessOopEnd = getTime();
 
+    // TinyExpr
+
+    // Heat up caches, etc.
+    for (size_t i = 0; i < ITER_COUNT; i++)
+        te_eval(tinyExpr);
+
+    // Measure
+    double tinyStart = getTime();
+    for (size_t i = 0; i < ITER_COUNT; i++)
+        te_eval(tinyExpr);
+    double tinyEnd = getTime();
+
     // Print results and cleanup
 
-    printf("\"%s\": oop %.3f seconds, lessoop: %.3f seconds.\n",
-        input, oopEnd - oopStart, lessOopEnd - lessOopStart);
+    printf("\"%s\": oop %.3f seconds, lessoop: %.3f seconds, tinyexpr: %.3f seconds.\n",
+        input, oopEnd - oopStart, lessOopEnd - lessOopStart, tinyEnd - tinyStart);
 
     delete oopExpr;
     ParserLessOop::exprFree(lessOopExpr);
+    te_free(tinyExpr);
 }
 
 int main()
@@ -113,5 +132,6 @@ int main()
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 
     benchmark("4");
-    benchmark("4 + fn1(8) * 19 - var.32");
+    //benchmark("4 + fn1(8) * 19 - var_32");
+    benchmark("4 + (var_32 / 4 - (32 + var_32)) * 19 - var_32");
 }
