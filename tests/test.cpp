@@ -33,6 +33,7 @@ static int failed;
 static void check(const char* input, ExprValue expected)
 {
     int result;
+    bool success;
 
     // ParserOop
 
@@ -43,19 +44,22 @@ static void check(const char* input, ExprValue expected)
         ParserOop::Expr* expr = ParserOop::Expr::parse(input, r);
         MyEvaluator e;
         result = expr->evaluate(e);
+        success = true;
     } catch (const ExprError& e) {
         printf("[ FAIL ] ParserOop: \"%s\" unexpected error: %s\n", input, e.message());
         ++failed;
-        return;
+        success = false;
     }
 
-    if (result != expected) {
-        printf("[ FAIL ] ParserOop: \"%s\" => result %ld != expected %ld\n", input, (long)result, (long)expected);
-        ++failed;
-    } else {
-        if (printPassed)
-            printf("[PASSED] ParserOop: \"%s\" => %ld\n", input, (long)result);
-        ++passed;
+    if (success) {
+        if (result != expected) {
+            printf("[ FAIL ] ParserOop: \"%s\" => result %ld != expected %ld\n", input, (long)result, (long)expected);
+            ++failed;
+        } else {
+            if (printPassed)
+                printf("[PASSED] ParserOop: \"%s\" => %ld\n", input, (long)result);
+            ++passed;
+        }
     }
 
     // ParserLessOop
@@ -67,25 +71,29 @@ static void check(const char* input, ExprValue expected)
         ParserLessOop::Expr* expr = ParserLessOop::exprParse(input, r);
         MyEvaluator e;
         result = ParserLessOop::exprEvaluate(expr, e);
+        success = true;
     } catch (const ExprError& e) {
         printf("[ FAIL ] ParserLessOop: \"%s\" unexpected error: %s\n", input, e.message());
         ++failed;
-        return;
+        success = false;
     }
 
-    if (result != expected) {
-        printf("[ FAIL ] ParserLessOop: \"%s\" => result %ld != expected %ld\n", input, (long)result, (long)expected);
-        ++failed;
-    } else {
-        if (printPassed)
-            printf("[PASSED] ParserLessOop: \"%s\" => %ld\n", input, (long)result);
-        ++passed;
+    if (success) {
+        if (result != expected) {
+            printf("[ FAIL ] ParserLessOop: \"%s\" => result %ld != expected %ld\n", input, (long)result, (long)expected);
+            ++failed;
+        } else {
+            if (printPassed)
+                printf("[PASSED] ParserLessOop: \"%s\" => %ld\n", input, (long)result);
+            ++passed;
+        }
     }
 }
 
 static void checkError(const char* input, const char* message)
 {
     int result;
+    bool success;
 
     // ParserOop
 
@@ -96,6 +104,7 @@ static void checkError(const char* input, const char* message)
         ParserOop::Expr* expr = ParserOop::Expr::parse(input, r);
         MyEvaluator e;
         result = expr->evaluate(e);
+        success = true;
     } catch (const ExprError& e) {
         if (!strcmp(e.message(), message)) {
             if (printPassed)
@@ -105,11 +114,13 @@ static void checkError(const char* input, const char* message)
             printf("[ FAIL ] [ParserOop] \"%s\" unexpected error: %s (was expecting: %s)\n", input, e.message(), message);
             ++failed;
         }
-        return;
+        success = false;
     }
 
-    printf("[ FAIL ] [ParserOop] \"%s\" => unexpected success (was expecting: %s)\n", input, message);
-    ++failed;
+    if (success) {
+        printf("[ FAIL ] [ParserOop] \"%s\" => unexpected success (was expecting: %s)\n", input, message);
+        ++failed;
+    }
 
     // ParserLessOop
 
@@ -120,6 +131,7 @@ static void checkError(const char* input, const char* message)
         ParserLessOop::Expr* expr = ParserLessOop::exprParse(input, r);
         MyEvaluator e;
         result = ParserLessOop::exprEvaluate(expr, e);
+        success = true;
     } catch (const ExprError& e) {
         if (!strcmp(e.message(), message)) {
             if (printPassed)
@@ -129,11 +141,13 @@ static void checkError(const char* input, const char* message)
             printf("[ FAIL ] [ParserLessOop] \"%s\" unexpected error: %s (was expecting: %s)\n", input, e.message(), message);
             ++failed;
         }
-        return;
+        success = false;
     }
 
-    printf("[ FAIL ] [ParserLessOop] \"%s\" => unexpected success (was expecting: %s)\n", input, message);
-    ++failed;
+    if (success) {
+        printf("[ FAIL ] [ParserLessOop] \"%s\" => unexpected success (was expecting: %s)\n", input, message);
+        ++failed;
+    }
 }
 
 int main()
