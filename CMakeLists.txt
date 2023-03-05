@@ -22,3 +22,11 @@ add_executable(ParserTest
     )
 
 target_link_libraries(ParserTest Parser)
+
+add_executable(ParserBenchmark
+    tests/common.cpp
+    tests/common.h
+    tests/benchmark.cpp
+    )
+
+target_link_libraries(ParserBenchmark Parser)
