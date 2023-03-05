@@ -98,7 +98,7 @@ static void benchmark(const char* input)
         ParserLessOop::exprEvaluate(lessOopExpr, e);
     double lessOopEnd = getTime();
 
-    // Prsize_t results and cleanup
+    // Print results and cleanup
 
     printf("\"%s\": oop %.3f seconds, lessoop: %.3f seconds.\n",
         input, oopEnd - oopStart, lessOopEnd - lessOopStart);
