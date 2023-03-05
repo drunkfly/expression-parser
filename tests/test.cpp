@@ -299,11 +299,11 @@ int main()
     checkError("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx", "unknown identifier 'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx'.");
     checkError("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxy", "identifier too long.");
     checkError("fn0", "unknown identifier 'fn0'.");
-    checkError("fn0(1)", "invalid number of arguments for function 'fn0'.");
-    checkError("fn1(1,2)", "invalid number of arguments for function 'fn1'.");
-    checkError("fn2(1)", "invalid number of arguments for function 'fn2'.");
-    checkError("fn3(1,5)", "invalid number of arguments for function 'fn3'.");
-    checkError("fn3(1,5,7,8)", "too many function arguments.");
+    checkError("fn0(1)", "invalid number of arguments for function 'fn0' (expected 0, got 1).");
+    checkError("fn1(1,2)", "invalid number of arguments for function 'fn1' (expected 1, got 2).");
+    checkError("fn2(1)", "invalid number of arguments for function 'fn2' (expected 2, got 1).");
+    checkError("fn3(1,5)", "invalid number of arguments for function 'fn3' (expected 3, got 2).");
+    checkError("fn3(1,5,7,8)", "too many arguments for function 'fn3'.");
     checkError("fn1(1", "missing ','.");
     checkError("fn2(1 1)", "missing ','.");
     checkError("varFn()", "unknown function 'varFn'.");

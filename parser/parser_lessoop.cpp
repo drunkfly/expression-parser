@@ -164,7 +164,7 @@ static Expr* primaryExpression(Context* c)
                 if (c->curToken->id != TOK_RPAREN) {
                     for (;;) {
                         if (numArgs >= EXPR_MAX_FUNC_ARGS)
-                            throw ExprError("too many function arguments.");
+                            throw ExprError("too many arguments for function '%s'.", name);
                         args[numArgs++] = expression(c);
                         if (c->curToken->id == TOK_RPAREN)
                             break;
@@ -180,17 +180,26 @@ static Expr* primaryExpression(Context* c)
                 ExprCallback3 cb3 = c->resolver->resolveFunc3(name);
                 if (!cb0 && !cb1 && !cb2 && !cb3)
                     throw ExprError("unknown function '%s'.", name);
+                int expectedArgs;
+                if (cb0)
+                    expectedArgs = 0;
+                else if (cb1)
+                    expectedArgs = 1;
+                else if (cb2)
+                    expectedArgs = 2;
+                else if (cb3)
+                    expectedArgs = 3;
                 switch (numArgs) {
                     case 0:
                         if (!cb0)
-                            throw ExprError("invalid number of arguments for function '%s'.", name);
+                            throw ExprError("invalid number of arguments for function '%s' (expected %d, got %d).", name, expectedArgs, numArgs);
                         result = new Expr;
                         result->op = OP_FUNC0;
                         result->cb0 = cb0;
                         return result;
                     case 1:
                         if (!cb1)
-                            throw ExprError("invalid number of arguments for function '%s'.", name);
+                            throw ExprError("invalid number of arguments for function '%s' (expected %d, got %d).", name, expectedArgs, numArgs);
                         result = new Expr;
                         result->op = OP_FUNC1;
                         result->cb1 = cb1;
@@ -198,7 +207,7 @@ static Expr* primaryExpression(Context* c)
                         return result;
                     case 2:
                         if (!cb2)
-                            throw ExprError("invalid number of arguments for function '%s'.", name);
+                            throw ExprError("invalid number of arguments for function '%s' (expected %d, got %d).", name, expectedArgs, numArgs);
                         result = new Expr;
                         result->op = OP_FUNC2;
                         result->cb2 = cb2;
@@ -207,7 +216,7 @@ static Expr* primaryExpression(Context* c)
                         return result;
                     case 3:
                         if (!cb3)
-                            throw ExprError("invalid number of arguments for function '%s'.", name);
+                            throw ExprError("invalid number of arguments for function '%s' (expected %d, got %d).", name, expectedArgs, numArgs);
                         result = new Expr;
                         result->op = OP_FUNC3;
                         result->cb3 = cb3;

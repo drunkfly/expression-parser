@@ -672,7 +672,7 @@ static Expr* primaryExpression(Context* c)
                 if (c->curToken->id != TOK_RPAREN) {
                     for (;;) {
                         if (numArgs >= EXPR_MAX_FUNC_ARGS)
-                            throw ExprError("too many function arguments.");
+                            throw ExprError("too many arguments for function '%s'.", name);
                         args[numArgs++] = expression(c);
                         if (c->curToken->id == TOK_RPAREN)
                             break;
@@ -688,22 +688,31 @@ static Expr* primaryExpression(Context* c)
                 ExprCallback3 cb3 = c->resolver->resolveFunc3(name);
                 if (!cb0 && !cb1 && !cb2 && !cb3)
                     throw ExprError("unknown function '%s'.", name);
+                int expectedArgs;
+                if (cb0)
+                    expectedArgs = 0;
+                else if (cb1)
+                    expectedArgs = 1;
+                else if (cb2)
+                    expectedArgs = 2;
+                else if (cb3)
+                    expectedArgs = 3;
                 switch (numArgs) {
                     case 0:
                         if (!cb0)
-                            throw ExprError("invalid number of arguments for function '%s'.", name);
+                            throw ExprError("invalid number of arguments for function '%s' (expected %d, got %d).", name, expectedArgs, numArgs);
                         return new Func0Expr(cb0);
                     case 1:
                         if (!cb1)
-                            throw ExprError("invalid number of arguments for function '%s'.", name);
+                            throw ExprError("invalid number of arguments for function '%s' (expected %d, got %d).", name, expectedArgs, numArgs);
                         return new Func1Expr(cb1, args[0]);
                     case 2:
                         if (!cb2)
-                            throw ExprError("invalid number of arguments for function '%s'.", name);
+                            throw ExprError("invalid number of arguments for function '%s' (expected %d, got %d).", name, expectedArgs, numArgs);
                         return new Func2Expr(cb2, args[0], args[1]);
                     case 3:
                         if (!cb3)
-                            throw ExprError("invalid number of arguments for function '%s'.", name);
+                            throw ExprError("invalid number of arguments for function '%s' (expected %d, got %d).", name, expectedArgs, numArgs);
                         return new Func3Expr(cb3, args[0], args[1], args[2]);
                     default:
                         throw ExprError("internal error.");
