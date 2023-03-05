@@ -110,6 +110,8 @@ static void benchmark(const char* input)
 int main()
 {
     QueryPerformanceFrequency(&freq);
+    SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+
     benchmark("4");
     benchmark("4 + fn1(8) * 19 - var.32");
 }
