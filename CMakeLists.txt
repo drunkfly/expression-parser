@@ -8,8 +8,11 @@ add_library(Parser STATIC
     parser/common.h
     parser/lexer.cpp
     parser/lexer.h
+    parser/parser_lessoop.cpp
+    parser/parser_lessoop.h
     parser/parser_oop.cpp
     parser/parser_oop.h
+    parser/resolve_oop.h
     )
 
 add_executable(ParserTest

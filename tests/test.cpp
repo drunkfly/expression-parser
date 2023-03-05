@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 #include "tests/common.h"
+#include "parser/parser_oop.h"
+#include "parser/parser_lessoop.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -31,25 +33,52 @@ static int failed;
 static void check(const char* input, ExprValue expected)
 {
     int result;
+
+    // ParserOop
+
     ++total;
 
     try {
         MyResolver r;
-        Expr* expr = Expr::parse(input, r);
+        ParserOop::Expr* expr = ParserOop::Expr::parse(input, r);
         MyEvaluator e;
         result = expr->evaluate(e);
     } catch (const ExprError& e) {
-        printf("[ FAIL ] \"%s\" unexpected error: %s\n", input, e.message());
+        printf("[ FAIL ] ParserOop: \"%s\" unexpected error: %s\n", input, e.message());
         ++failed;
         return;
     }
 
     if (result != expected) {
-        printf("[ FAIL ] \"%s\" => result %ld != expected %ld\n", input, (long)result, (long)expected);
+        printf("[ FAIL ] ParserOop: \"%s\" => result %ld != expected %ld\n", input, (long)result, (long)expected);
         ++failed;
     } else {
         if (printPassed)
-            printf("[PASSED] \"%s\" => %ld\n", input, (long)result);
+            printf("[PASSED] ParserOop: \"%s\" => %ld\n", input, (long)result);
+        ++passed;
+    }
+
+    // ParserLessOop
+
+    ++total;
+
+    try {
+        MyResolver r;
+        ParserLessOop::Expr* expr = ParserLessOop::exprParse(input, r);
+        MyEvaluator e;
+        result = ParserLessOop::exprEvaluate(expr, e);
+    } catch (const ExprError& e) {
+        printf("[ FAIL ] ParserLessOop: \"%s\" unexpected error: %s\n", input, e.message());
+        ++failed;
+        return;
+    }
+
+    if (result != expected) {
+        printf("[ FAIL ] ParserLessOop: \"%s\" => result %ld != expected %ld\n", input, (long)result, (long)expected);
+        ++failed;
+    } else {
+        if (printPassed)
+            printf("[PASSED] ParserLessOop: \"%s\" => %ld\n", input, (long)result);
         ++passed;
     }
 }
@@ -57,26 +86,53 @@ static void check(const char* input, ExprValue expected)
 static void checkError(const char* input, const char* message)
 {
     int result;
+
+    // ParserOop
+
     ++total;
 
     try {
         MyResolver r;
-        Expr* expr = Expr::parse(input, r);
+        ParserOop::Expr* expr = ParserOop::Expr::parse(input, r);
         MyEvaluator e;
         result = expr->evaluate(e);
     } catch (const ExprError& e) {
         if (!strcmp(e.message(), message)) {
             if (printPassed)
-                printf("[PASSED] \"%s\" => error %s\n", input, e.message());
+                printf("[PASSED] [ParserOop] \"%s\" => error %s\n", input, e.message());
             ++passed;
         } else {
-            printf("[ FAIL ] \"%s\" unexpected error: %s (was expecting: %s)\n", input, e.message(), message);
+            printf("[ FAIL ] [ParserOop] \"%s\" unexpected error: %s (was expecting: %s)\n", input, e.message(), message);
             ++failed;
         }
         return;
     }
 
-    printf("[ FAIL ] \"%s\" => unexpected success (was expecting: %s)\n", input, message);
+    printf("[ FAIL ] [ParserOop] \"%s\" => unexpected success (was expecting: %s)\n", input, message);
+    ++failed;
+
+    // ParserLessOop
+
+    ++total;
+
+    try {
+        MyResolver r;
+        ParserLessOop::Expr* expr = ParserLessOop::exprParse(input, r);
+        MyEvaluator e;
+        result = ParserLessOop::exprEvaluate(expr, e);
+    } catch (const ExprError& e) {
+        if (!strcmp(e.message(), message)) {
+            if (printPassed)
+                printf("[PASSED] [ParserLessOop] \"%s\" => error %s\n", input, e.message());
+            ++passed;
+        } else {
+            printf("[ FAIL ] [ParserLessOop] \"%s\" unexpected error: %s (was expecting: %s)\n", input, e.message(), message);
+            ++failed;
+        }
+        return;
+    }
+
+    printf("[ FAIL ] [ParserLessOop] \"%s\" => unexpected success (was expecting: %s)\n", input, message);
     ++failed;
 }
 
@@ -247,6 +303,8 @@ int main()
     checkError("#", "syntax error in expression.");
     checkError("#q", "syntax error in expression.");
     checkError("$q", "syntax error in expression.");
+    checkError("2/0", "division by zero.");
+    checkError("3 % (1 - 1)", "division by zero.");
 
     printf("----------\n");
     if (failed)

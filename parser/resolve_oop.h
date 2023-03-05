@@ -19,31 +19,36 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#ifndef DRUNKFLY_TESTS_COMMON_H
-#define DRUNKFLY_TESTS_COMMON_H
+#ifndef PARSER_PARSER_RESOLVE_OOP_H
+#define PARSER_PARSER_RESOLVE_OOP_H
 
-#include "parser/resolve_oop.h"
+#include "parser/common.h"
 
-#define PC_VALUE 0xcafebabe
-
-class MyResolver : public ExprResolver
+class ExprResolver
 {
 public:
-    ExprCallback0 resolveFunc0(const char* name);
-    ExprCallback1 resolveFunc1(const char* name);
-    ExprCallback2 resolveFunc2(const char* name);
-    ExprCallback3 resolveFunc3(const char* name);
-    bool resolveVariable(const char* name, ExprValuePtr& result);
+    virtual ~ExprResolver() {}
+    virtual ExprCallback0 resolveFunc0(const char* name) { (void)name; return NULL; }
+    virtual ExprCallback1 resolveFunc1(const char* name) { (void)name; return NULL; }
+    virtual ExprCallback2 resolveFunc2(const char* name) { (void)name; return NULL; }
+    virtual ExprCallback3 resolveFunc3(const char* name) { (void)name; return NULL; }
+    virtual bool resolveVariable(const char* name, ExprValuePtr& result) { (void)name; (void)result; return false; }
 };
 
-class MyEvaluator : public ExprEvaluator
+class ExprEvaluator
 {
 public:
-    MyEvaluator() : ExprEvaluator(PC_VALUE) {}
+    ExprEvaluator(ExprValue pc) : m_pc(pc) {}
+    virtual ~ExprEvaluator() {}
 
-    uint8_t memByte(ExprValue address) const { return address + 0x10; }
-    uint16_t memWord(ExprValue address) const { return address - 0xb0; }
-    uint32_t memDword(ExprValue address) const { return address * 4; }
+    ExprValue pc() const { return m_pc; }
+
+    virtual uint8_t memByte(ExprValue address) const { (void)address; return 0; }
+    virtual uint16_t memWord(ExprValue address) const { (void)address; return 0; }
+    virtual uint32_t memDword(ExprValue address) const { (void)address; return 0; }
+
+private:
+    ExprValue m_pc;
 };
 
 #endif

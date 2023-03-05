@@ -19,31 +19,73 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#ifndef DRUNKFLY_TESTS_COMMON_H
-#define DRUNKFLY_TESTS_COMMON_H
+#ifndef DRUNKFLY_PARSER_LESSOOP_H
+#define DRUNKFLY_PARSER_LESSOOP_H
 
+#include "parser/common.h"
 #include "parser/resolve_oop.h"
 
-#define PC_VALUE 0xcafebabe
-
-class MyResolver : public ExprResolver
+namespace ParserLessOop
 {
-public:
-    ExprCallback0 resolveFunc0(const char* name);
-    ExprCallback1 resolveFunc1(const char* name);
-    ExprCallback2 resolveFunc2(const char* name);
-    ExprCallback3 resolveFunc3(const char* name);
-    bool resolveVariable(const char* name, ExprValuePtr& result);
+
+enum ExprOp
+{
+    OP_NUMBER,
+    OP_CALLBACKVALUE,
+    OP_BYTEVALUE,
+    OP_WORDVALUE,
+    OP_U24VALUE,
+    OP_DWORDVALUE,
+    OP_FUNC0,
+    OP_FUNC1,
+    OP_FUNC2,
+    OP_FUNC3,
+    OP_MEMBYTE,
+    OP_MEMWORD,
+    OP_MEMDWORD,
+    OP_DOLLAR,
+    OP_COND,
+    OP_LOGICOR,
+    OP_LOGICAND,
+    OP_LOGICNOT,
+    OP_BITOR,
+    OP_BITAND,
+    OP_BITXOR,
+    OP_BITNOT,
+    OP_EQUAL,
+    OP_NOTEQUAL,
+    OP_LESS,
+    OP_LESSEQUAL,
+    OP_GREATER,
+    OP_GREATEREQUAL,
+    OP_SHL,
+    OP_SHR,
+    OP_PLUS,
+    OP_MINUS,
+    OP_NEGATE,
+    OP_MULTIPLY,
+    OP_DIVIDE,
+    OP_REMAINDER,
 };
 
-class MyEvaluator : public ExprEvaluator
+struct Expr
 {
-public:
-    MyEvaluator() : ExprEvaluator(PC_VALUE) {}
-
-    uint8_t memByte(ExprValue address) const { return address + 0x10; }
-    uint16_t memWord(ExprValue address) const { return address - 0xb0; }
-    uint32_t memDword(ExprValue address) const { return address * 4; }
+    ExprOp op;
+    ExprValue number;
+    ExprValuePtr valuePtr;
+    ExprCallback0 cb0;
+    ExprCallback1 cb1;
+    ExprCallback2 cb2;
+    ExprCallback3 cb3;
+    Expr* op1;
+    Expr* op2;
+    Expr* op3;
 };
+
+Expr* exprParse(const char* input, ExprResolver& resolver);
+ExprValue exprEvaluate(const Expr* expr, ExprEvaluator& eval);
+void exprFree(Expr* expr);
+
+} // namespace
 
 #endif
