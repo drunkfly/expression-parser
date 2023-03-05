@@ -100,7 +100,7 @@ static void benchmark(const char* input)
 
     // Prsize_t results and cleanup
 
-    printf("\"%s\": oop %.3f seconds, lessoop: %.3f seconds.",
+    printf("\"%s\": oop %.3f seconds, lessoop: %.3f seconds.\n",
         input, oopEnd - oopStart, lessOopEnd - lessOopStart);
 
     delete oopExpr;
@@ -111,4 +111,5 @@ int main()
 {
     QueryPerformanceFrequency(&freq);
     benchmark("4");
+    benchmark("4 + fn1(8) * 19 - var.32");
 }
