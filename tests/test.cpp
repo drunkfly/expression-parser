@@ -1,133 +1,34 @@
-#include "parser.h"
+/*
+Copyright (c) 2023 Drunk Fly
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+#include "tests/common.h"
 #include <stdio.h>
 #include <string.h>
-#include <stdint.h>
 
 static bool printPassed = true;
 static int total;
 static int passed;
 static int failed;
 
-#define PC_VALUE 0xcafebabe
-
-static Expr::Value fn0()
-{
-    return 0x7777;
-}
-
-static Expr::Value fn1(Expr::Value v1)
-{
-    return 0x8888 + v1;
-}
-
-static Expr::Value fn2(Expr::Value v1, Expr::Value v2)
-{
-    return 0x9999 + v1 * v2;
-}
-
-static Expr::Value fn3(Expr::Value v1, Expr::Value v2, Expr::Value v3)
-{
-    return 0xaaaa + (v1 * v2 - v3);
-}
-
-static Expr::Value readVar()
-{
-    return 0xb0b0;
-}
-
-static Expr::Value readAF()
-{
-    return 0xbccb;
-}
-
-static const uint32_t value32 = 0x0abacada;
-
-class MyResolver : public Expr::Resolver
-{
-public:
-    Expr::Callback0 resolveFunc0(const char* name)
-    {
-        if (!strcmp(name, "fn0"))
-            return fn0;
-        return NULL;
-    }
-
-    Expr::Callback1 resolveFunc1(const char* name)
-    {
-        if (!strcmp(name, "fn1"))
-            return fn1;
-        return NULL;
-    }
-
-    Expr::Callback2 resolveFunc2(const char* name)
-    {
-        if (!strcmp(name, "fn2"))
-            return fn2;
-        return NULL;
-    }
-
-    Expr::Callback3 resolveFunc3(const char* name)
-    {
-        if (!strcmp(name, "fn3"))
-            return fn3;
-        return NULL;
-    }
-
-    bool resolveVariable(const char* name, Expr::ValuePtr& result)
-    {
-        if (!strcmp(name, "var.8")) {
-            result.ptr = &value32;
-            result.sizeInBytes = 1;
-            return true;
-        }
-        if (!strcmp(name, "var.8.1")) {
-            result.ptr = (uint8_t*)&value32 + 1;
-            result.sizeInBytes = 1;
-            return true;
-        }
-        if (!strcmp(name, "var.16")) {
-            result.ptr = &value32;
-            result.sizeInBytes = 2;
-            return true;
-        }
-        if (!strcmp(name, "var.16.1")) {
-            result.ptr = (uint8_t*)&value32 + 2;
-            result.sizeInBytes = 2;
-            return true;
-        }
-        if (!strcmp(name, "var.24")) {
-            result.ptr = &value32;
-            result.sizeInBytes = 3;
-            return true;
-        }
-        if (!strcmp(name, "var.32")) {
-            result.ptr = &value32;
-            result.sizeInBytes = 4;
-            return true;
-        }
-        if (!strcmp(name, "varFn")) {
-            result.readValue = readVar;
-            return true;
-        }
-        if (!strcmp(name, "af'")) {
-            result.readValue = readAF;
-            return true;
-        }
-        return false;
-    }
-};
-
-class MyEvaluator : public Expr::Evaluator
-{
-public:
-    MyEvaluator() : Evaluator(PC_VALUE) {}
-
-    uint8_t memByte(Expr::Value address) const { return address + 0x10; }
-    uint16_t memWord(Expr::Value address) const { return address - 0xb0; }
-    uint32_t memDword(Expr::Value address) const { return address * 4; }
-};
-
-static void check(const char* input, Expr::Value expected)
+static void check(const char* input, ExprValue expected)
 {
     int result;
     ++total;
@@ -137,7 +38,7 @@ static void check(const char* input, Expr::Value expected)
         Expr* expr = Expr::parse(input, r);
         MyEvaluator e;
         result = expr->evaluate(e);
-    } catch (const Expr::Error& e) {
+    } catch (const ExprError& e) {
         printf("[ FAIL ] \"%s\" unexpected error: %s\n", input, e.message());
         ++failed;
         return;
@@ -163,7 +64,7 @@ static void checkError(const char* input, const char* message)
         Expr* expr = Expr::parse(input, r);
         MyEvaluator e;
         result = expr->evaluate(e);
-    } catch (const Expr::Error& e) {
+    } catch (const ExprError& e) {
         if (!strcmp(e.message(), message)) {
             if (printPassed)
                 printf("[PASSED] \"%s\" => error %s\n", input, e.message());
