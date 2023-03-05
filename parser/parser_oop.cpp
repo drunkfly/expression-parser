@@ -667,21 +667,6 @@ static Expr* primaryExpression(Context* c)
                 // Function
                 const char* name = c->curToken->text;
                 c->curToken = c->curToken->next->next;
-                Expr* args[EXPR_MAX_FUNC_ARGS] = {NULL};
-                int numArgs = 0;
-                if (c->curToken->id != TOK_RPAREN) {
-                    for (;;) {
-                        if (numArgs >= EXPR_MAX_FUNC_ARGS)
-                            throw ExprError("too many arguments for function '%s'.", name);
-                        args[numArgs++] = expression(c);
-                        if (c->curToken->id == TOK_RPAREN)
-                            break;
-                        if (c->curToken->id != TOK_COMMA)
-                            throw ExprError("missing ','.");
-                        c->curToken = c->curToken->next;
-                    }
-                }
-                c->curToken = c->curToken->next;
                 ExprCallback0 cb0 = c->resolver->resolveFunc0(name); 
                 ExprCallback1 cb1 = c->resolver->resolveFunc1(name);
                 ExprCallback2 cb2 = c->resolver->resolveFunc2(name);
@@ -697,6 +682,21 @@ static Expr* primaryExpression(Context* c)
                     expectedArgs = 2;
                 else if (cb3)
                     expectedArgs = 3;
+                Expr* args[EXPR_MAX_FUNC_ARGS] = {NULL};
+                int numArgs = 0;
+                if (c->curToken->id != TOK_RPAREN) {
+                    for (;;) {
+                        if (numArgs >= EXPR_MAX_FUNC_ARGS)
+                            throw ExprError("too many arguments for function '%s' (expected %d).", name, expectedArgs);
+                        args[numArgs++] = expression(c);
+                        if (c->curToken->id == TOK_RPAREN)
+                            break;
+                        if (c->curToken->id != TOK_COMMA)
+                            throw ExprError("missing ','.");
+                        c->curToken = c->curToken->next;
+                    }
+                }
+                c->curToken = c->curToken->next;
                 switch (numArgs) {
                     case 0:
                         if (!cb0)
